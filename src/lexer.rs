@@ -9,28 +9,20 @@ enum CharType {
 }
 
 pub struct Lexer {
-    current: usize,
     file_contents: String,
 }
 
 impl Lexer {
-    pub fn new(current: usize, file_contents: String) -> Self {
-        Self {
-            current,
-            file_contents,
-        }
+    pub fn new(file_contents: String) -> Self {
+        Self { file_contents }
     }
 
     /// Returns a Lexer instance from a file.
     pub fn from_file(path: &str) -> Self {
-        Self::new(0, fs::read_to_string(path).unwrap())
+        Self::new(fs::read_to_string(path).unwrap())
     }
 
     fn check_next_char(&self, init: char, iter: &mut Chars, ty: CharType) -> String {
-        // if self.current == self.file_contents.len() {
-        //     return Err(());
-        // }
-
         let mut chars = String::from(init);
 
         for c in iter {
@@ -45,7 +37,6 @@ impl Lexer {
                     _ => return chars,
                 };
             }
-            // self.current += 1
         }
 
         chars
@@ -71,7 +62,7 @@ impl Lexer {
                 '=' => Token::Assign,
                 '0'..='9' => Token::Lit(self.check_next_char(c, &mut chars_iter, CharType::Num)),
                 'A'..='z' => Token::Ident(self.check_next_char(c, &mut chars_iter, CharType::Num)),
-                ' ' | '\n' | '\t' => continue,
+                ' ' | '\n' | '\t' | '\0' => continue,
                 _ => {
                     return Err(Error::UnknownCharacterError(c));
                 }
