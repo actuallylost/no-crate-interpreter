@@ -26,7 +26,7 @@ impl Lexer {
         Self::new(0, fs::read_to_string(path).unwrap())
     }
 
-    fn check_next_char(&mut self, iter: &mut Chars, ty: CharType) -> String {
+    fn check_next_char(&self, iter: &mut Chars, ty: CharType) -> String {
         // if self.current == self.file_contents.len() {
         //     return Err(());
         // }
@@ -45,18 +45,18 @@ impl Lexer {
                     _ => return chars,
                 };
             }
-            self.current += 1
+            // self.current += 1
         }
 
         chars
     }
 
-    pub fn tokenize(&mut self) -> Result<Vec<Token>, Error> {
+    pub fn tokenize(&self) -> Result<Vec<Token>, Error> {
         let mut tokens = vec![];
         let mut chars_iter = self.file_contents.chars();
 
-        while self.current < self.file_contents.len() {
-            tokens.push(match chars_iter.nth(self.current).unwrap() {
+        while let Some(c) = chars_iter.next() {
+            tokens.push(match c {
                 '(' => Token::LParen,
                 ')' => Token::RParen,
                 '{' => Token::LBrace,
@@ -69,12 +69,10 @@ impl Lexer {
                 '/' => Token::Div,
                 '%' => Token::Mod,
                 '=' => Token::Assign,
-                '0'..='9' => Token::Lit(&mut self.check_next_char(&mut chars_iter, CharType::Num)),
-                'A'..='z' => {
-                    Token::Ident(&mut self.check_next_char(&mut chars_iter, CharType::Num))
-                }
+                '0'..='9' => Token::Lit(self.check_next_char(&mut chars_iter, CharType::Num)),
+                'A'..='z' => Token::Ident(self.check_next_char(&mut chars_iter, CharType::Num)),
                 ' ' | '\n' | '\t' => continue,
-                c => {
+                _ => {
                     return Err(Error::UnknownCharacterError(c));
                 }
             });
