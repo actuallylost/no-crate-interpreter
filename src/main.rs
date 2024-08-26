@@ -5,7 +5,7 @@ mod lexer;
 mod token;
 
 fn main() {
-    let mut lexer = Lexer::from_file("./hello.lost");
+    let lexer = Lexer::from_path("./hello.lost");
 
     let tokens = lexer.tokenize().unwrap();
 

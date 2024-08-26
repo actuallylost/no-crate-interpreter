@@ -9,7 +9,7 @@ pub enum Token {
     Mul,
     Div,
     Mod,
-    Assign,
-    Lit(String),
+    Equals,
+    Lit(i32),
     Ident(String),
 }
