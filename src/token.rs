@@ -1,12 +1,15 @@
 #[derive(Debug)]
-pub enum Tokens {
+pub enum Token {
     LParen,
     RParen,
-    LBracket,
-    RBracket,
+    LBrace,
+    RBrace,
     Plus,
     Minus,
     Mul,
     Div,
     Mod,
+    Assign,
+    Lit(String),
+    Ident(String),
 }
