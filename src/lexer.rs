@@ -26,12 +26,12 @@ impl Lexer {
         Self::new(0, fs::read_to_string(path).unwrap())
     }
 
-    fn check_next_char(&self, iter: &mut Chars, ty: CharType) -> String {
+    fn check_next_char(&self, init: char, iter: &mut Chars, ty: CharType) -> String {
         // if self.current == self.file_contents.len() {
         //     return Err(());
         // }
 
-        let mut chars = String::from("");
+        let mut chars = String::from(init);
 
         for c in iter {
             if ty == CharType::Num {
@@ -69,8 +69,8 @@ impl Lexer {
                 '/' => Token::Div,
                 '%' => Token::Mod,
                 '=' => Token::Assign,
-                '0'..='9' => Token::Lit(self.check_next_char(&mut chars_iter, CharType::Num)),
-                'A'..='z' => Token::Ident(self.check_next_char(&mut chars_iter, CharType::Num)),
+                '0'..='9' => Token::Lit(self.check_next_char(c, &mut chars_iter, CharType::Num)),
+                'A'..='z' => Token::Ident(self.check_next_char(c, &mut chars_iter, CharType::Num)),
                 ' ' | '\n' | '\t' => continue,
                 _ => {
                     return Err(Error::UnknownCharacterError(c));
