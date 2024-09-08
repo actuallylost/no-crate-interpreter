@@ -1,7 +1,9 @@
 use lexer::Lexer;
 
 mod error;
+mod grammar;
 mod lexer;
+mod parser;
 mod token;
 
 fn main() {
