@@ -16,6 +16,7 @@ pub enum Token {
     Equals,
     Lit(i32),
     Ident(String),
+    LF,
 }
 
 impl Display for Token {
@@ -35,6 +36,7 @@ impl Display for Token {
             Token::Equals => write!(f, "="),
             Token::Lit(n) => write!(f, "{}", n),
             Token::Ident(s) => write!(f, "{}", s),
+            Token::LF => write!(f, "\\n"),
         }
     }
 }

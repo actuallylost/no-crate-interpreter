@@ -59,7 +59,8 @@ impl Lexer {
                     }
                     Token::Ident(chars)
                 }
-                ' ' | '\n' | '\t' | '\0' => continue,
+                '\n' => Token::LF,
+                ' ' | '\t' | '\0' => continue,
                 _ => {
                     return Err(Error::UnexpectedCharacter(c));
                 }
