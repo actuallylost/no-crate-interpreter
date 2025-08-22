@@ -27,8 +27,8 @@ impl Lexer {
                 ')' => Token::RParen,
                 '{' => Token::LBrace,
                 '}' => Token::RBrace,
-                '[' => Token::LBrace,
-                ']' => Token::RBrace,
+                '[' => Token::LBracket,
+                ']' => Token::RBracket,
                 '+' => Token::Plus,
                 '-' => Token::Minus,
                 '*' => Token::Mul,
@@ -61,7 +61,7 @@ impl Lexer {
                 }
                 ' ' | '\n' | '\t' | '\0' => continue,
                 _ => {
-                    return Err(Error::UnknownCharacterError(c));
+                    return Err(Error::UnexpectedCharacter(c));
                 }
             });
         }
