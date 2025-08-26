@@ -30,7 +30,7 @@ impl Display for Error {
             Error::UnexpectedToken(exp, fnd, pos) => {
                 write!(f, "Expected {}, found {} at pos {}", exp, fnd, pos)
             }
-            Error::UnexpectedEndOfLine(c) => write!(f, "Expected \\n found {}", c),
+            Error::UnexpectedEndOfLine(c) => write!(f, "Expected '\\r\\n' or '\\n' found {}", c),
         }
     }
 }
