@@ -1,6 +1,9 @@
+use std::time::Instant;
+
 use lexer::Lexer;
 use parser::Parser;
 
+mod ast;
 mod error;
 mod lexer;
 mod parser;
@@ -9,16 +12,18 @@ mod token;
 fn main() {
     let lexer = Lexer::from_path("./hello.lost");
 
-    let _tokens = lexer.tokenize().unwrap();
+    let tokens = lexer.tokenize().unwrap();
 
-    // println!("{:?}", tokens);
+    println!("{:?}", tokens);
 
-    let input = "aaaaaaaaaa";
-    let parsed = Parser::parse(input);
+    let mut parser = Parser::new(tokens);
+    let now = Instant::now();
+    let ast = parser.parse();
+    let elapsed = now.elapsed();
 
-    if parsed.is_ok() {
-        println!("Sucessfully parsed: '{}'", input);
+    if ast.is_ok() {
+        println!("Parsed (in {:?}): '{:?}'", elapsed, ast.unwrap());
     } else {
-        println!("{:?}", parsed.unwrap());
+        println!("{:?}", ast.unwrap());
     }
 }
