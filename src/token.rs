@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     LParen,
     RParen,
@@ -34,8 +34,8 @@ impl Display for Token {
             Token::Div => write!(f, "/"),
             Token::Mod => write!(f, "%"),
             Token::Equals => write!(f, "="),
-            Token::Lit(n) => write!(f, "{}", n),
-            Token::Ident(s) => write!(f, "{}", s),
+            Token::Lit(n) => write!(f, "Lit({})", n),
+            Token::Ident(s) => write!(f, "Ident({})", s),
             Token::LF => write!(f, "\\n"),
         }
     }
