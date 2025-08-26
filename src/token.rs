@@ -17,6 +17,7 @@ pub enum Token {
     Lit(i32),
     Ident(String),
     LF,
+    CRLF,
 }
 
 impl Display for Token {
@@ -37,6 +38,7 @@ impl Display for Token {
             Token::Lit(n) => write!(f, "Lit({})", n),
             Token::Ident(s) => write!(f, "Ident({})", s),
             Token::LF => write!(f, "\\n"),
+            Token::CRLF => write!(f, "\\r\\n"),
         }
     }
 }

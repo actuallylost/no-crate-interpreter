@@ -59,6 +59,15 @@ impl Lexer {
                     }
                     Token::Ident(chars)
                 }
+                '\r' => {
+                    if let Some(ch) = chars_iter.peek() {
+                        if !(*ch == '\n') {
+                            return Err(Error::UnexpectedEndOfLine('\r'));
+                        }
+                        chars_iter.next();
+                    }
+                    Token::CRLF
+                }
                 '\n' => Token::LF,
                 ' ' | '\t' | '\0' => continue,
                 _ => {
@@ -201,5 +210,20 @@ mod tests {
         let actual = lexer.tokenize().unwrap();
 
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn end_of_file() {
+        let lexer_1 = Lexer::new(String::from("\r\n"));
+        let lexer_2 = Lexer::new(String::from("\n"));
+        let expected_1 = vec![Token::CRLF];
+        let expected_2 = vec![Token::LF];
+        let actual_1 = lexer_1.tokenize().unwrap();
+        let actual_2 = lexer_2.tokenize().unwrap();
+
+        // CRLF
+        assert_eq!(expected_1, actual_1);
+        // LF
+        assert_eq!(expected_2, actual_2);
     }
 }
