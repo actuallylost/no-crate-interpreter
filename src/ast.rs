@@ -72,14 +72,18 @@ impl Execute for Expr {
                 exec_a - exec_b
             }
             Expr::Mul(a, b) => {
-                println!("{:?} * {:?}", a, b);
-                println!("{:?} * {:?}", a.execute(), b.execute());
-                a.execute() * b.execute()
+                // println!("Expr: {:?} * {:?}", a, b);
+                let exec_a = a.execute();
+                let exec_b = b.execute();
+                // println!("i32: {:?} * {:?}", exec_a, exec_b);
+                exec_a * exec_b
             }
             Expr::Div(a, b) => {
-                println!("{:?} / {:?}", a, b);
-                println!("{:?} / {:?}", a.execute(), b.execute());
-                a.execute() / b.execute()
+                // println!("Expr: {:?} / {:?}", a, b);
+                let exec_a = a.execute();
+                let exec_b = b.execute();
+                // println!("i32: {:?} / {:?}", exec_a, exec_b);
+                exec_a / exec_b
             }
             Expr::Lit(n) => *n,
         }

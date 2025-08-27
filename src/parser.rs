@@ -16,14 +16,17 @@ impl ParserState {
 
 /// # Grammar
 /// ```
-/// S -> Sub? EOF
+/// S -> Div? EOF
 ///
 /// Lit -> [0-9]+
 ///
 /// Add -> Lit + Add | Lit
 ///
-/// Sub -> Add - Sub
-/// Sub -> Add
+/// Sub -> Add - Sub | Add
+///
+/// Mul -> Sub * Mul | Sub
+///
+/// Div -> Mul / Div | Mul
 /// ```
 pub struct Parser {
     tokens: Vec<Token>,
@@ -91,11 +94,46 @@ impl Parser {
 
     /// Return a Stmt::Expr if parsing is successful
     fn expr(&mut self) -> Result<Stmt, Error> {
-        self.sub().map(|expr| Stmt::Expr(Box::new(expr)))
+        self.div().map(|expr| Stmt::Expr(Box::new(expr)))
     }
 
-    // Sub -> Add - Sub
-    // Sub -> Add
+    // Div -> Mul / Div | Mul
+    /// Returns an `Expr::Div` if parsing is successful
+    fn div(&mut self) -> Result<Expr, Error> {
+        let mul = self.mul()?;
+        // println!("Div (mul): {:?}, {}", mul, self.state.cursor);
+
+        match self.advance_if(|tkn| matches!(tkn, Token::Div)) {
+            Some(t) => {
+                // println!("Div (some): {:?}, {}", t, self.state.cursor);
+                Ok(Expr::Div(Box::new(mul), Box::new(self.div().unwrap())))
+            }
+            None => {
+                // println!("Div (none): {:?}, {}", t, self.state.cursor);
+                Ok(mul)
+            }
+        }
+    }
+
+    // Div -> Sub * Mul | Sub
+    /// Returns an `Expr::Mul` if parsing is successful
+    fn mul(&mut self) -> Result<Expr, Error> {
+        let sub = self.sub()?;
+        // println!("Mul (sub): {:?}, {}", sub, self.state.cursor);
+
+        match self.advance_if(|tkn| matches!(tkn, Token::Mul)) {
+            Some(t) => {
+                // println!("Mul (some): {:?}, {}", t, self.state.cursor);
+                Ok(Expr::Mul(Box::new(sub), Box::new(self.mul().unwrap())))
+            }
+            None => {
+                // println!("Mul (none): {:?}, {}", t, self.state.cursor);
+                Ok(sub)
+            }
+        }
+    }
+
+    // Sub -> Add - Sub | Add
     /// Returns an `Expr::Sub` if parsing is successful
     fn sub(&mut self) -> Result<Expr, Error> {
         let add = self.add()?;
@@ -129,16 +167,6 @@ impl Parser {
                 Ok(lit)
             }
         }
-    }
-
-    /// Returns an `Expr::Mul` if parsing is successful
-    fn _mul(a: i32, b: i32) -> Result<Expr, Error> {
-        Ok(Expr::Mul(Box::new(Expr::Lit(a)), Box::new(Expr::Lit(b))))
-    }
-
-    /// Returns an `Expr::Div` if parsing is successful
-    fn _div(a: i32, b: i32) -> Result<Expr, Error> {
-        Ok(Expr::Div(Box::new(Expr::Lit(a)), Box::new(Expr::Lit(b))))
     }
 
     // Lit -> [0-9]+
@@ -243,6 +271,80 @@ mod tests {
     }
 
     #[test]
+    fn single_mul() {
+        let tokens = vec![Token::Lit(10), Token::Mul, Token::Lit(273), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Mul(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Lit(273)),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn multi_mul() {
+        let tokens = vec![
+            Token::Lit(10),
+            Token::Mul,
+            Token::Lit(273),
+            Token::Mul,
+            Token::Lit(19),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Mul(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Mul(Box::new(Expr::Lit(273)), Box::new(Expr::Lit(19)))),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn single_div() {
+        let tokens = vec![Token::Lit(10), Token::Div, Token::Lit(273), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Div(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Lit(273)),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn multi_div() {
+        let tokens = vec![
+            Token::Lit(10),
+            Token::Div,
+            Token::Lit(273),
+            Token::Div,
+            Token::Lit(19),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Div(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Div(Box::new(Expr::Lit(273)), Box::new(Expr::Lit(19)))),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
     fn combined_add_then_sub() {
         let tokens = vec![
             Token::Lit(372),
@@ -287,6 +389,50 @@ mod tests {
     }
 
     #[test]
+    fn combined_mul_then_div() {
+        let tokens = vec![
+            Token::Lit(372),
+            Token::Mul,
+            Token::Lit(49),
+            Token::Div,
+            Token::Lit(130),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Div(
+            Box::new(Expr::Mul(Box::new(Expr::Lit(372)), Box::new(Expr::Lit(49)))),
+            Box::new(Expr::Lit(130)),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn combined_div_then_mul() {
+        let tokens = vec![
+            Token::Lit(372),
+            Token::Div,
+            Token::Lit(49),
+            Token::Mul,
+            Token::Lit(130),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Div(
+            Box::new(Expr::Lit(372)),
+            Box::new(Expr::Mul(Box::new(Expr::Lit(49)), Box::new(Expr::Lit(130)))),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
     #[should_panic]
     fn single_add_missing_first_num() {
         let tokens = vec![Token::Plus, Token::Lit(139), Token::EOF];
@@ -317,6 +463,42 @@ mod tests {
     #[should_panic]
     fn single_sub_missing_second_num() {
         let tokens = vec![Token::Lit(32), Token::Minus, Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_mul_missing_first_num() {
+        let tokens = vec![Token::Mul, Token::Lit(139), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_mul_missing_second_num() {
+        let tokens = vec![Token::Lit(32), Token::Mul, Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_div_missing_first_num() {
+        let tokens = vec![Token::Div, Token::Lit(139), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_div_missing_second_num() {
+        let tokens = vec![Token::Lit(32), Token::Div, Token::EOF];
         let mut parser = Parser::new(tokens);
         // this should panic
         parser.parse().unwrap();
