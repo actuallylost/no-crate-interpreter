@@ -76,6 +76,7 @@ impl Lexer {
             });
         }
 
+        tokens.push(Token::EOF);
         Ok(tokens)
     }
 }
@@ -95,6 +96,7 @@ mod tests {
             Token::Lit(9),
             Token::Lit(1),
             Token::Lit(7),
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -112,6 +114,7 @@ mod tests {
             Token::Lit(9),
             Token::Lit(1),
             Token::Lit(7),
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -127,6 +130,7 @@ mod tests {
             Token::Lit(81),
             Token::Lit(741),
             Token::Lit(32),
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -142,6 +146,7 @@ mod tests {
             Token::Lit(81),
             Token::Lit(741),
             Token::Lit(32),
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -162,6 +167,7 @@ mod tests {
             Token::Ident(String::from("m")),
             Token::Ident(String::from("T")),
             Token::Ident(String::from("D")),
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -184,6 +190,7 @@ mod tests {
             Token::Ident(String::from("maDp")),
             Token::Ident(String::from("TaUID")),
             Token::Ident(String::from("Ddua")),
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -206,6 +213,7 @@ mod tests {
             Token::RBracket,
             Token::LBrace,
             Token::RBrace,
+            Token::EOF,
         ];
         let actual = lexer.tokenize().unwrap();
 
@@ -213,11 +221,11 @@ mod tests {
     }
 
     #[test]
-    fn end_of_file() {
+    fn end_of_line() {
         let lexer_1 = Lexer::new(String::from("\r\n"));
         let lexer_2 = Lexer::new(String::from("\n"));
-        let expected_1 = vec![Token::CRLF];
-        let expected_2 = vec![Token::LF];
+        let expected_1 = vec![Token::CRLF, Token::EOF];
+        let expected_2 = vec![Token::LF, Token::EOF];
         let actual_1 = lexer_1.tokenize().unwrap();
         let actual_2 = lexer_2.tokenize().unwrap();
 
