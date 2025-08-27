@@ -33,6 +33,6 @@ fn main() {
         let elapsed_exec = now.elapsed();
         println!("Took {:?}", elapsed_exec);
     } else {
-        println!("{:?}", ast.unwrap());
+        println!("Error: {}", ast.unwrap_err());
     }
 }

@@ -44,7 +44,7 @@ impl Parser {
 
     /// Parses the tokenized source code, and returns an `Ast`
     pub fn parse(&mut self) -> Result<Ast, Error> {
-        if self.tokens.len() == 0 {
+        if self.tokens.len() == 0 || *self.current().unwrap() == Token::EOF {
             return Err(Error::EmptyTokens);
         }
 
