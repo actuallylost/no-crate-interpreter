@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Ast(Vec<Stmt>);
 
 impl Ast {
@@ -15,18 +15,17 @@ impl Ast {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Stmt {
     Expr(Box<Expr>),
 }
 
 /// Defines all Expression variants
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Expr {
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
     Lit(i32),
-    EOF,
 }

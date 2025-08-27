@@ -45,7 +45,6 @@ impl Parser {
 
         let mut ast = Ast::new();
         let expr = self.expr()?;
-        // println!("Parsed: {:?}", expr);
         ast.push(expr);
 
         Ok(ast)
@@ -68,13 +67,15 @@ impl Parser {
         token
     }
 
+    // Advance the cursor if the closure returns true
     pub fn advance_if<F>(&mut self, f: F) -> Option<Token>
     where
         F: FnOnce(Token) -> bool,
     {
-        let current = self.current().unwrap();
+        let current = self.current()?;
+
         if f(current.clone()) {
-            Some(self.advance().unwrap())
+            self.advance()
         } else {
             None
         }
@@ -86,6 +87,7 @@ impl Parser {
         self.current().map(|t| t.to_owned())
     }
 
+    /// Return a Stmt::Expr if parsing is successful
     fn expr(&mut self) -> Result<Stmt, Error> {
         self.sub().map(|expr| Stmt::Expr(Box::new(expr)))
     }
@@ -157,5 +159,164 @@ impl Parser {
             }
             _ => unreachable!(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn single_add() {
+        let tokens = vec![Token::Lit(10), Token::Plus, Token::Lit(273), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Add(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Lit(273)),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn multi_add() {
+        let tokens = vec![
+            Token::Lit(10),
+            Token::Plus,
+            Token::Lit(273),
+            Token::Plus,
+            Token::Lit(19),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Add(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Add(Box::new(Expr::Lit(273)), Box::new(Expr::Lit(19)))),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn single_sub() {
+        let tokens = vec![Token::Lit(10), Token::Minus, Token::Lit(273), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Sub(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Lit(273)),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn multi_sub() {
+        let tokens = vec![
+            Token::Lit(10),
+            Token::Minus,
+            Token::Lit(273),
+            Token::Minus,
+            Token::Lit(19),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Sub(
+            Box::new(Expr::Lit(10)),
+            Box::new(Expr::Sub(Box::new(Expr::Lit(273)), Box::new(Expr::Lit(19)))),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn combined_add_then_sub() {
+        let tokens = vec![
+            Token::Lit(372),
+            Token::Plus,
+            Token::Lit(49),
+            Token::Minus,
+            Token::Lit(130),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Sub(
+            Box::new(Expr::Add(Box::new(Expr::Lit(372)), Box::new(Expr::Lit(49)))),
+            Box::new(Expr::Lit(130)),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn combined_sub_then_add() {
+        let tokens = vec![
+            Token::Lit(372),
+            Token::Minus,
+            Token::Lit(49),
+            Token::Plus,
+            Token::Lit(130),
+            Token::EOF,
+        ];
+        let mut parser = Parser::new(tokens);
+        let actual = parser.parse().unwrap();
+
+        let mut expected = Ast::new();
+        expected.push(Stmt::Expr(Box::new(Expr::Sub(
+            Box::new(Expr::Lit(372)),
+            Box::new(Expr::Add(Box::new(Expr::Lit(49)), Box::new(Expr::Lit(130)))),
+        ))));
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_add_missing_first_num() {
+        let tokens = vec![Token::Plus, Token::Lit(139), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_add_missing_second_num() {
+        let tokens = vec![Token::Lit(32), Token::Plus, Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_sub_missing_first_num() {
+        let tokens = vec![Token::Minus, Token::Lit(139), Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_sub_missing_second_num() {
+        let tokens = vec![Token::Lit(32), Token::Minus, Token::EOF];
+        let mut parser = Parser::new(tokens);
+        // this should panic
+        parser.parse().unwrap();
     }
 }
