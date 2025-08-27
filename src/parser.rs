@@ -31,6 +31,7 @@ pub struct Parser {
 }
 
 impl Parser {
+    /// Creates a `Parser` instance
     pub fn new(tokens: Vec<Token>) -> Self {
         Self {
             tokens,
@@ -38,6 +39,7 @@ impl Parser {
         }
     }
 
+    /// Parses the tokenized source code, and returns an `Ast`
     pub fn parse(&mut self) -> Result<Ast, Error> {
         if self.tokens.len() == 0 {
             return Err(Error::EmptyTokens);
@@ -97,15 +99,15 @@ impl Parser {
     /// Returns an `Expr::Sub` if parsing is successful
     fn sub(&mut self) -> Result<Expr, Error> {
         let add = self.add()?;
-        println!("Sub (add): {:?}, {}", add, self.state.cursor);
+        // println!("Sub (add): {:?}, {}", add, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Minus)) {
             Some(t) => {
-                println!("Sub (some): {:?}, {}", t, self.state.cursor);
+                // println!("Sub (some): {:?}, {}", t, self.state.cursor);
                 Ok(Expr::Sub(Box::new(add), Box::new(self.sub().unwrap())))
             }
             None => {
-                println!("Sub (none): {:?}, {}", add, self.state.cursor);
+                // println!("Sub (none): {:?}, {}", add, self.state.cursor);
                 Ok(add)
             }
         }
@@ -115,15 +117,15 @@ impl Parser {
     /// Returns an `Expr::Add` if parsing is successful
     fn add(&mut self) -> Result<Expr, Error> {
         let lit = self.lit()?;
-        println!("Add (lit): {:?}, {}", lit, self.state.cursor);
+        // println!("Add (lit): {:?}, {}", lit, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Plus)) {
             Some(t) => {
-                println!("Add (some): {t}, {}", self.state.cursor);
+                // println!("Add (some): {t}, {}", self.state.cursor);
                 Ok(Expr::Add(Box::new(lit), Box::new(self.add().unwrap())))
             }
             None => {
-                println!("Add (none): {:?}, {}", lit, self.state.cursor);
+                // println!("Add (none): {:?}, {}", lit, self.state.cursor);
                 Ok(lit)
             }
         }
@@ -144,12 +146,12 @@ impl Parser {
     fn lit(&mut self) -> Result<Expr, Error> {
         match self.advance_if(|tkn| matches!(tkn, Token::Lit(_))) {
             Some(Token::Lit(n)) => {
-                println!("Lit (some): {n}, {}", self.state.cursor);
+                // println!("Lit (some): {n}, {}", self.state.cursor);
                 Ok(Expr::Lit(n))
             }
             None => {
                 let curr = self.current().unwrap().to_owned();
-                println!("Lit (none): {:?}, {}", curr, self.state.cursor);
+                // println!("Lit (none): {:?}, {}", curr, self.state.cursor);
                 self.backtrack();
                 Err(Error::UnexpectedToken(
                     TokenType::Lit,
