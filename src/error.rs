@@ -10,6 +10,8 @@ pub enum Error {
     EmptyTokens,
     UnexpectedToken(TokenType, Token, usize),
     UnexpectedEndOfLine(char),
+    // Runtime Errors
+    DivideByZero,
 }
 
 #[derive(Debug)]
@@ -31,6 +33,7 @@ impl Display for Error {
                 write!(f, "Expected {}, found {} at pos {}", exp, fnd, pos)
             }
             Error::UnexpectedEndOfLine(c) => write!(f, "Expected '\\r\\n' or '\\n' found {}", c),
+            Error::DivideByZero => write!(f, "Cannot divide by zero"),
         }
     }
 }
