@@ -16,17 +16,17 @@ impl ParserState {
 
 /// # Grammar
 /// ```
-/// S -> Div? EOF
+/// S -> Sub? EOF
 ///
 /// Lit -> [0-9]+
 ///
-/// Add -> Lit + Add | Lit
-///
-/// Sub -> Add - Sub | Add
-///
-/// Mul -> Sub * Mul | Sub
+/// Mul -> Lit * Mul | Lit
 ///
 /// Div -> Mul / Div | Mul
+///
+/// Add -> Div + Add | Div
+///
+/// Sub -> Add - Sub | Add
 /// ```
 pub struct Parser {
     tokens: Vec<Token>,
@@ -94,7 +94,7 @@ impl Parser {
 
     /// Return a Stmt::Expr if parsing is successful
     fn expr(&mut self) -> Result<Stmt, Error> {
-        self.div().map(|expr| Stmt::Expr(Box::new(expr)))
+        self.sub().map(|expr| Stmt::Expr(Box::new(expr)))
     }
 
     // Div -> Mul / Div | Mul
@@ -115,20 +115,20 @@ impl Parser {
         }
     }
 
-    // Div -> Sub * Mul | Sub
+    // Mul -> Lit * Mul | Lit
     /// Returns an `Expr::Mul` if parsing is successful
     fn mul(&mut self) -> Result<Expr, Error> {
-        let sub = self.sub()?;
-        // println!("Mul (sub): {:?}, {}", sub, self.state.cursor);
+        let lit = self.lit()?;
+        // println!("Mul (lit): {:?}, {}", lit, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Mul)) {
             Some(t) => {
                 // println!("Mul (some): {:?}, {}", t, self.state.cursor);
-                Ok(Expr::Mul(Box::new(sub), Box::new(self.mul().unwrap())))
+                Ok(Expr::Mul(Box::new(lit), Box::new(self.mul().unwrap())))
             }
             None => {
                 // println!("Mul (none): {:?}, {}", t, self.state.cursor);
-                Ok(sub)
+                Ok(lit)
             }
         }
     }
@@ -151,20 +151,20 @@ impl Parser {
         }
     }
 
-    // Add -> Lit + Add | Lit
+    // Add -> Div + Add | Div
     /// Returns an `Expr::Add` if parsing is successful
     fn add(&mut self) -> Result<Expr, Error> {
-        let lit = self.lit()?;
-        // println!("Add (lit): {:?}, {}", lit, self.state.cursor);
+        let div = self.div()?;
+        // println!("Add (div): {:?}, {}", div, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Plus)) {
             Some(t) => {
                 // println!("Add (some): {t}, {}", self.state.cursor);
-                Ok(Expr::Add(Box::new(lit), Box::new(self.add().unwrap())))
+                Ok(Expr::Add(Box::new(div), Box::new(self.add().unwrap())))
             }
             None => {
-                // println!("Add (none): {:?}, {}", lit, self.state.cursor);
-                Ok(lit)
+                // println!("Add (none): {:?}, {}", div, self.state.cursor);
+                Ok(div)
             }
         }
     }
