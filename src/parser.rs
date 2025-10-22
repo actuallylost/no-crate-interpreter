@@ -20,11 +20,11 @@ impl ParserState {
 ///
 /// Lit -> [0-9]+
 ///
-/// Mul -> Lit * Mul | Lit
+/// Div -> Lit / Div | Lit
 ///
-/// Div -> Mul / Div | Mul
+/// Mul -> Div * Mul | Div
 ///
-/// Add -> Div + Add | Div
+/// Add -> Mul + Add | Mul
 ///
 /// Sub -> Add - Sub | Add
 /// ```
@@ -100,35 +100,35 @@ impl Parser {
     // Div -> Mul / Div | Mul
     /// Returns an `Expr::Div` if parsing is successful
     fn div(&mut self) -> Result<Expr, Error> {
-        let mul = self.mul()?;
-        // println!("Div (mul): {:?}, {}", mul, self.state.cursor);
+        let lit = self.lit()?;
+        // println!("Div (lit): {:?}, {}", lit, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Div)) {
             Some(t) => {
                 // println!("Div (some): {:?}, {}", t, self.state.cursor);
-                Ok(Expr::Div(Box::new(mul), Box::new(self.div().unwrap())))
+                Ok(Expr::Div(Box::new(lit), Box::new(self.div().unwrap())))
             }
             None => {
                 // println!("Div (none): {:?}, {}", t, self.state.cursor);
-                Ok(mul)
+                Ok(lit)
             }
         }
     }
 
-    // Mul -> Lit * Mul | Lit
+    // Mul -> Div * Mul | Div
     /// Returns an `Expr::Mul` if parsing is successful
     fn mul(&mut self) -> Result<Expr, Error> {
-        let lit = self.lit()?;
-        // println!("Mul (lit): {:?}, {}", lit, self.state.cursor);
+        let div = self.div()?;
+        // println!("Mul (div): {:?}, {}", div, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Mul)) {
             Some(t) => {
                 // println!("Mul (some): {:?}, {}", t, self.state.cursor);
-                Ok(Expr::Mul(Box::new(lit), Box::new(self.mul().unwrap())))
+                Ok(Expr::Mul(Box::new(div), Box::new(self.mul().unwrap())))
             }
             None => {
                 // println!("Mul (none): {:?}, {}", t, self.state.cursor);
-                Ok(lit)
+                Ok(div)
             }
         }
     }
@@ -151,20 +151,20 @@ impl Parser {
         }
     }
 
-    // Add -> Div + Add | Div
+    // Add -> Mul + Add | Mul
     /// Returns an `Expr::Add` if parsing is successful
     fn add(&mut self) -> Result<Expr, Error> {
-        let div = self.div()?;
-        // println!("Add (div): {:?}, {}", div, self.state.cursor);
+        let mul = self.mul()?;
+        // println!("Add (mul): {:?}, {}", mul, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Plus)) {
             Some(t) => {
                 // println!("Add (some): {t}, {}", self.state.cursor);
-                Ok(Expr::Add(Box::new(div), Box::new(self.add().unwrap())))
+                Ok(Expr::Add(Box::new(mul), Box::new(self.add().unwrap())))
             }
             None => {
-                // println!("Add (none): {:?}, {}", div, self.state.cursor);
-                Ok(div)
+                // println!("Add (none): {:?}, {}", mul, self.state.cursor);
+                Ok(mul)
             }
         }
     }
