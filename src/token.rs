@@ -21,6 +21,16 @@ pub enum Token {
     EOF,
 }
 
+#[derive(Debug)]
+pub enum TokenType {
+    Mul,
+    Div,
+    Mod,
+    Plus,
+    Minus,
+    Lit,
+}
+
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
@@ -41,6 +51,19 @@ impl Display for Token {
             Token::LF => write!(f, "\\n"),
             Token::CRLF => write!(f, "\\r\\n"),
             Token::EOF => write!(f, "EOF"),
+        }
+    }
+}
+
+impl Display for TokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            TokenType::Mul => write!(f, "Mul"),
+            TokenType::Div => write!(f, "Div"),
+            TokenType::Mod => write!(f, "Mod"),
+            TokenType::Plus => write!(f, "Plus"),
+            TokenType::Minus => write!(f, "Minus"),
+            TokenType::Lit => write!(f, "Lit"),
         }
     }
 }

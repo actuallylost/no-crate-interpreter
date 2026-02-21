@@ -1,7 +1,7 @@
 use crate::{
     ast::{Ast, Expr, Stmt},
-    error::{Error, TokenType},
-    token::Token,
+    error::Error,
+    token::{Token, TokenType},
 };
 
 pub struct ParserState {
@@ -104,7 +104,7 @@ impl Parser {
         // println!("Div (lit): {:?}, {}", lit, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Div)) {
-            Some(t) => {
+            Some(_t) => {
                 // println!("Div (some): {:?}, {}", t, self.state.cursor);
                 Ok(Expr::Div(Box::new(lit), Box::new(self.div().unwrap())))
             }
@@ -122,7 +122,7 @@ impl Parser {
         // println!("Mul (div): {:?}, {}", div, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Mul)) {
-            Some(t) => {
+            Some(_t) => {
                 // println!("Mul (some): {:?}, {}", t, self.state.cursor);
                 Ok(Expr::Mul(Box::new(div), Box::new(self.mul().unwrap())))
             }
@@ -140,7 +140,7 @@ impl Parser {
         // println!("Sub (add): {:?}, {}", add, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Minus)) {
-            Some(t) => {
+            Some(_t) => {
                 // println!("Sub (some): {:?}, {}", t, self.state.cursor);
                 Ok(Expr::Sub(Box::new(add), Box::new(self.sub().unwrap())))
             }
@@ -158,7 +158,7 @@ impl Parser {
         // println!("Add (mul): {:?}, {}", mul, self.state.cursor);
 
         match self.advance_if(|tkn| matches!(tkn, Token::Plus)) {
-            Some(t) => {
+            Some(_t) => {
                 // println!("Add (some): {t}, {}", self.state.cursor);
                 Ok(Expr::Add(Box::new(mul), Box::new(self.add().unwrap())))
             }
