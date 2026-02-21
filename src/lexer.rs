@@ -59,17 +59,18 @@ impl Lexer {
                     }
                     Token::Ident(chars)
                 }
-                '\r' => {
-                    if let Some(ch) = chars_iter.peek() {
-                        if !(*ch == '\n') {
-                            return Err(Error::UnexpectedEndOfLine('\r'));
-                        }
-                        chars_iter.next();
-                    }
-                    Token::CRLF
-                }
-                '\n' => Token::LF,
-                ' ' | '\t' | '\0' => continue,
+                // TODO: see if adding CRLF/LF to tokenstream is necessary
+                // '\r' => {
+                //     if let Some(ch) = chars_iter.peek() {
+                //         if !(*ch == '\n') {
+                //             return Err(Error::UnexpectedEndOfLine('\r'));
+                //         }
+                //         chars_iter.next();
+                //     }
+                //     Token::CRLF
+                // }
+                // '\n' => Token::LF,
+                ' ' | '\n' | '\t' | '\0' => continue,
                 _ => {
                     return Err(Error::UnexpectedCharacter(c));
                 }
