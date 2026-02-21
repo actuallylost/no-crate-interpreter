@@ -402,9 +402,9 @@ mod tests {
         let actual = parser.parse().unwrap();
 
         let mut expected = Ast::new();
-        expected.push(Stmt::Expr(Box::new(Expr::Div(
-            Box::new(Expr::Mul(Box::new(Expr::Lit(372)), Box::new(Expr::Lit(49)))),
-            Box::new(Expr::Lit(130)),
+        expected.push(Stmt::Expr(Box::new(Expr::Mul(
+            Box::new(Expr::Lit(372)),
+            Box::new(Expr::Div(Box::new(Expr::Lit(49)), Box::new(Expr::Lit(130)))),
         ))));
 
         assert_eq!(expected, actual);
@@ -424,9 +424,9 @@ mod tests {
         let actual = parser.parse().unwrap();
 
         let mut expected = Ast::new();
-        expected.push(Stmt::Expr(Box::new(Expr::Div(
-            Box::new(Expr::Lit(372)),
-            Box::new(Expr::Mul(Box::new(Expr::Lit(49)), Box::new(Expr::Lit(130)))),
+        expected.push(Stmt::Expr(Box::new(Expr::Mul(
+            Box::new(Expr::Div(Box::new(Expr::Lit(372)), Box::new(Expr::Lit(49)))),
+            Box::new(Expr::Lit(130)),
         ))));
 
         assert_eq!(expected, actual);
