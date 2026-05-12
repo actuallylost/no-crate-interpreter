@@ -49,6 +49,7 @@ pub enum Expr {
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
+    Unary(Box<Expr>),
     Lit(i32),
 }
 
@@ -85,6 +86,7 @@ impl Execute for Expr {
                 // println!("i32: {:?} / {:?}", exec_a, exec_b);
                 exec_a / exec_b
             }
+            Expr::Unary(expr) => todo!(),
             Expr::Lit(n) => *n,
         }
     }

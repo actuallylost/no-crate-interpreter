@@ -17,20 +17,26 @@ impl ParserState {
 /// # Grammar
 /// ```
 /// S -> Sub? EOF
-///
 /// Lit -> [0-9]+
-///
 /// Div -> Lit / Div | Lit
-///
 /// Mul -> Div * Mul | Div
-///
 /// Add -> Mul + Add | Mul
-///
 /// Sub -> Add - Sub | Add
 /// ```
 pub struct Parser {
     tokens: Vec<Token>,
     state: ParserState,
+}
+
+pub trait Parse<I, O> {
+    fn literal() -> Result<O, Error>;
+    fn add() -> Result<O, Error>;
+    fn sub() -> Result<O, Error>;
+    fn mul() -> Result<O, Error>;
+    fn div() -> Result<O, Error>;
+    fn foldl();
+    fn just();
+    fn or();
 }
 
 impl Parser {
